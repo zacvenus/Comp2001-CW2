@@ -1,107 +1,83 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request, render_template
 import pyodbc
-from config import Config
+import config
 
 app = Flask(__name__)
 
-# Helper function for DB connection
-def get_db_connection():
-    try:
-        conn = pyodbc.connect(Config.connectionString)
-        return conn
-    except pyodbc.Error as e:
-        print("Database connection failed:", e)
-        return None
+@app.route('/')
+def index():
+    return render_template('home.html')
 
-# Routes
 @app.route('/trails', methods=['GET'])
 def get_trails():
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"error": "Database connection failed"}), 500
     try:
+        conn = pyodbc.connect(config.connectionString)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM CW2.TrailDetails;")
-        trails = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
-        return jsonify(trails), 200
+        SQL_QUERY = "SELECT * FROM CW2.TrailDetails;"
+        cursor.execute(SQL_QUERY)
+        trails = []
+        for row in cursor.fetchall():
+            trail = {
+                'TrailID': row[0],
+                'TrailName': row[1],
+                'Difficulty': row[2],
+                'UserName': row[3],
+                'City': row[4],
+                'County': row[5],
+                'Country': row[6],
+                'Distance': row[7],
+                'Elevation': row[8],
+                'Hours': row[9],
+                'Minutes': row[10],
+                'Type': row[11],
+                'Description': row[12]
+            }
+            trails.append(trail)
+        return jsonify(trails)
+    except pyodbc.Error as e:
+        return jsonify({"error": str(e)}), 500
     finally:
-        conn.close()
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.route('/trails', methods=['POST'])
 def add_trail():
-    data = request.json
-    required_fields = ['TrailName', 'UserName', 'Distance', 'Country']
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"error": "Database connection failed"}), 500
+    new_trail = request.get_json()
     try:
+        conn = pyodbc.connect(config.connectionString)
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO CW2.TrailDetails (TrailName, Difficulty, UserName, City, County, Country, Distance, Elevation, Hours, Minutes, Type, Description) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-            data.get('TrailName'), data.get('Difficulty'), data.get('UserName'), data.get('City'), data.get('County'),
-            data.get('Country'), data.get('Distance'), data.get('Elevation'), data.get('Hours'), data.get('Minutes'),
-            data.get('Type'), data.get('Description')
-        )
+        SQL_QUERY = """
+            INSERT INTO CW2.TrailDetails (TrailName, Difficulty, UserName, City, County, Country, Distance, Elevation, Hours, Minutes, Type, Description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        cursor.execute(SQL_QUERY, (
+            new_trail['TrailName'], new_trail['Difficulty'], new_trail['UserName'],
+            new_trail['City'], new_trail['County'], new_trail['Country'],
+            new_trail['Distance'], new_trail['Elevation'], new_trail['Hours'],
+            new_trail['Minutes'], new_trail['Type'], new_trail['Description']
+        ))
         conn.commit()
-        return jsonify({"message": "Trail added successfully"}), 201
+        return jsonify(new_trail), 201
+    except pyodbc.Error as e:
+        return jsonify({"error": str(e)}), 500
     finally:
-        conn.close()
-
-@app.route('/trails/<int:id>', methods=['GET'])
-def get_trail_by_id(id):
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"error": "Database connection failed"}), 500
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM CW2.TrailDetails WHERE TrailID = ?;", id)
-        row = cursor.fetchone()
-        if not row:
-            return jsonify({"error": "Trail not found"}), 404
-        trail = dict(zip([column[0] for column in cursor.description], row))
-        return jsonify(trail), 200
-    finally:
-        conn.close()
-
-@app.route('/trails/<int:id>', methods=['PUT'])
-def update_trail(id):
-    data = request.json
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"error": "Database connection failed"}), 500
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            "UPDATE CW2.TrailDetails SET TrailName = ?, Difficulty = ?, UserName = ?, City = ?, County = ?, Country = ?, Distance = ?, Elevation = ?, Hours = ?, Minutes = ?, Type = ?, Description = ? WHERE TrailID = ?;",
-            data.get('TrailName'), data.get('Difficulty'), data.get('UserName'), data.get('City'), data.get('County'),
-            data.get('Country'), data.get('Distance'), data.get('Elevation'), data.get('Hours'), data.get('Minutes'),
-            data.get('Type'), data.get('Description'), id
-        )
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Trail not found"}), 404
-        conn.commit()
-        return jsonify({"message": "Trail updated successfully"}), 200
-    finally:
-        conn.close()
+        if 'conn' in locals() and conn:
+            conn.close()
 
 @app.route('/trails/<int:id>', methods=['DELETE'])
 def delete_trail(id):
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"error": "Database connection failed"}), 500
     try:
+        conn = pyodbc.connect(config.connectionString)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM CW2.TrailDetails WHERE TrailID = ?;", id)
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Trail not found"}), 404
+        SQL_QUERY = "DELETE FROM CW2.TrailDetails WHERE TrailID = ?"
+        cursor.execute(SQL_QUERY, (id,))
         conn.commit()
         return '', 204
+    except pyodbc.Error as e:
+        return jsonify({"error": str(e)}), 500
     finally:
-        conn.close()
+        if 'conn' in locals() and conn:
+            conn.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
