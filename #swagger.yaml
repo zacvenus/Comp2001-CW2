@@ -1,0 +1,232 @@
+openapi: 3.0.0
+info:
+  title: TrailAPI
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local server
+  - url: https://dist-6-505.uopnet.plymouth.ac.uk
+    description: Uni Server
+
+paths:
+  /trails:
+    get:
+      summary: Get all trails
+      tags:
+        - Trails
+      responses:
+        '200':
+          description: List of trails
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trail'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Add a new trail
+      tags:
+        - Trails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrailInput'
+      responses:
+        '201':
+          description: Trail created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trail'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /trails/{id}:
+    get:
+      summary: Get trail by ID
+      tags:
+        - Trails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Trail details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trail'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update trail
+      tags:
+        - Trails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrailInput'
+      responses:
+        '200':
+          description: Trail updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trail'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete trail
+      tags:
+        - Trails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Trail:
+      type: object
+      properties:
+        TrailID:
+          type: integer
+        TrailName:
+          type: string
+        Difficulty:
+          type: string
+        UserName:
+          type: string
+        City:
+          type: string
+        County:
+          type: string
+        Country:
+          type: string
+        Distance:
+          type: number
+          format: float
+        Elevation:
+          type: integer
+        Hours:
+          type: integer
+        Minutes:
+          type: integer
+        Type:
+          type: string
+        Description:
+          type: string
+
+    TrailInput:
+      type: object
+      required:
+      - TrailName
+      - UserName
+      - Distance
+      - Country
+      properties:
+        TrailName:
+          type: string
+        Difficulty:
+          type: string
+        UserName:
+          type: string
+        City:
+          type: string
+        County:
+          type: string
+        Country:
+          type: string
+        Distance:
+          type: number
+          format: float
+        Elevation:
+          type: integer
+        Hours:
+          type: integer
+        Minutes:
+          type: integer
+        Type:
+          type: string
+        Description:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
