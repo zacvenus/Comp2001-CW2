@@ -1,29 +1,13 @@
 from flask import Flask, request, jsonify
 import pyodbc
+from config import Config
 
 app = Flask(__name__)
-
-# Database connection
-SERVER = 'dist-6-505.uopnet.plymouth.ac.uk'
-DATABASE = 'COMP2001_ZVenus'
-USERNAME = 'ZVenus'
-PASSWORD = 'WefN343*'
-
-connectionString = (
-    f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-    f"SERVER={SERVER};"
-    f"DATABASE={DATABASE};"
-    f"UID={USERNAME};"
-    f"PWD={PASSWORD};"
-    "TrustServerCertificate=yes;"
-    "Encrypt"
-    "Trusted_Connection=No"
-)
 
 # Helper function for DB connection
 def get_db_connection():
     try:
-        conn = pyodbc.connect(connectionString)
+        conn = pyodbc.connect(Config.connectionString)
         return conn
     except pyodbc.Error as e:
         print("Database connection failed:", e)
