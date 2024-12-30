@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 import pyodbc
-import config
-
+from config import Config
 app = Flask(__name__)
 
 @app.route('/')
@@ -11,7 +10,7 @@ def index():
 @app.route('/trails', methods=['GET'])
 def get_trails():
     try:
-        conn = pyodbc.connect(config.connectionString)
+        conn = pyodbc.connect(Config.connectionString)
         cursor = conn.cursor()
         SQL_QUERY = "SELECT * FROM CW2.TrailDetails;"
         cursor.execute(SQL_QUERY)
@@ -44,7 +43,7 @@ def get_trails():
 def add_trail():
     new_trail = request.get_json()
     try:
-        conn = pyodbc.connect(config.connectionString)
+        conn = pyodbc.connect(Config.connectionString)
         cursor = conn.cursor()
         SQL_QUERY = """
             INSERT INTO CW2.TrailDetails (TrailName, Difficulty, UserName, City, County, Country, Distance, Elevation, Hours, Minutes, Type, Description)
@@ -67,7 +66,7 @@ def add_trail():
 @app.route('/trails/<int:id>', methods=['DELETE'])
 def delete_trail(id):
     try:
-        conn = pyodbc.connect(config.connectionString)
+        conn = pyodbc.connect(Config.connectionString)
         cursor = conn.cursor()
         SQL_QUERY = "DELETE FROM CW2.TrailDetails WHERE TrailID = ?"
         cursor.execute(SQL_QUERY, (id,))
