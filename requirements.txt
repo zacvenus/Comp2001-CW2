@@ -31,3 +31,4 @@
  urllib3==2.0.6
  Werkzeug==2.2.2
  pytz
+ pyodbc==5.0.1
