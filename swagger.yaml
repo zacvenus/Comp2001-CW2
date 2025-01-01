@@ -12,6 +12,7 @@ paths:
   /trails:
     get:
       summary: Get all trails
+      operationId: get_trails
       tags:
         - Trails
       responses:
@@ -31,6 +32,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     post:
       summary: Add a new trail
+      operationId: add_trail
       tags:
         - Trails
       requestBody:
@@ -62,6 +64,7 @@ paths:
   /trails/{id}:
     get:
       summary: Get trail by ID
+      operationId: get_trail_by_id
       tags:
         - Trails
       parameters:
@@ -91,6 +94,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     put:
       summary: Update trail
+      operationId: update_trail
       tags:
         - Trails
       parameters:
@@ -132,6 +136,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     delete:
       summary: Delete trail
+      operationId: delete_trail
       tags:
         - Trails
       parameters:
@@ -161,66 +166,83 @@ components:
     Trail:
       type: object
       properties:
-        TrailID:
+        trail_id:
           type: integer
-        TrailName:
+        name:
           type: string
-        Difficulty:
+        difficulty:
           type: string
-        UserName:
+        description:
           type: string
-        City:
-          type: string
-        County:
-          type: string
-        Country:
-          type: string
-        Distance:
+        distance:
           type: number
           format: float
-        Elevation:
+        elevation:
+          type: number
+          format: float
+        hours:
           type: integer
-        Hours:
+        mins:
           type: integer
-        Minutes:
-          type: integer
-        Type:
+        location:
+          type: object
+          properties:
+            city:
+              type: string
+            country:
+              type: string
+            county:
+              type: string
+        type:
           type: string
-        Description:
-          type: string
+        owner:
+          type: object
+          properties:
+            user_id:
+              type: integer
+            email:
+              type: string
+            role:
+              type: string
 
     TrailInput:
       type: object
       required:
-      - TrailName
-      - UserName
-      - Distance
-      - Country
+        - name
+        - difficulty
+        - distance
+        - description
+        - location_id
+        - type_id
+        - owner_id
       properties:
-        TrailName:
+        name:
           type: string
-        Difficulty:
+        difficulty:
           type: string
-        UserName:
+        description:
           type: string
-        City:
-          type: string
-        County:
-          type: string
-        Country:
-          type: string
-        Distance:
+        distance:
           type: number
           format: float
-        Elevation:
+        elevation:
+          type: number
+          format: float
+        hours:
           type: integer
-        Hours:
+        mins:
           type: integer
-        Minutes:
+        location_id:
           type: integer
-        Type:
+        type_id:
+          type: integer
+        owner_id:
+          type: integer
+        city:
           type: string
-        Description:
+        county:
+          type: string
+        country:
           type: string
 
     Error:
@@ -229,4 +251,34 @@ components:
         code:
           type: integer
         message:
+          type: string
+
+    Location:
+      type: object
+      properties:
+        location_id:
+          type: integer
+        city:
+          type: string
+        county:
+          type: string
+        country:
+          type: string
+
+    Type:
+      type: object
+      properties:
+        type_id:
+          type: integer
+        type_name:
+          type: string
+
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        email:
+          type: string
+        role:
           type: string
