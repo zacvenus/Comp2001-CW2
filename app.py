@@ -10,7 +10,7 @@ swagger = Swagger(app)
 AUTH_URL = "https://web.socem.plymouth.ac.uk/COMP2001/auth/api/users"
 
 def is_user_admin(user):
-    return user.role == 'ADMIN'
+    return user.role == 'admin'
 
 def get_user(req):
     email = request.headers.get("x-email")
@@ -125,47 +125,57 @@ def create_trail():
 
     try:
         trail_data = request.get_json()
+        print("Trail Data:", trail_data) 
 
-        points_data = trail_data.pop("points")
+        points_data = trail_data.pop("points", [])
+        print("Points Data:", points_data) 
 
         new_trail = Trail(
-            owner_id=user.user_id,
-            name=trail_data['name'],
+            user_id=user.user_id,
+            trail_name=trail_data['trail_name'],
             difficulty=trail_data['difficulty'],
             distance=trail_data['distance'],
             elevation=trail_data['elevation'],
             hours=trail_data['hours'],
-            mins=trail_data['minutes'],
+            minutes=trail_data['minutes'],
             description=trail_data['description'],
             location_id=trail_data['location_id'],
             type_id=trail_data['type_id']
         )
 
         db.session.add(new_trail)
-        db.session.commit()
+        db.session.commit() 
+
+        trail_id = new_trail.trail_id
+        print(f"New Trail ID: {trail_id}")  
 
         for point in points_data:
             new_point = TrailPoint(
-                trail_id=new_trail.trail_id,
+                trail_id=trail_id,  
                 sequence_order=point['sequence_order'],
-                longitude=point['longitude'],
-                latitude=point['latitude']
+                latitude=point['latitude'],
+                longitude=point['longitude']
             )
             db.session.add(new_point)
 
         db.session.commit()
 
         new_log = TrailLog(
-            TrailID=new_trail.trail_id,
-            UserID=user.user_id,
-            Timestamp=datetime.now()
+            trail_id=trail_id,
+            user_id=user.user_id,
+            timestamp=datetime.now()
         )
         db.session.add(new_log)
         db.session.commit()
 
         return jsonify({"message": "Trail created successfully", "trail": TrailSchema().dump(new_trail)}), 201
+
     except Exception as e:
+        print("Error details:", str(e))  
         return jsonify({"error": "Error creating trail", "details": str(e)}), 500
+
+
+
 
 @app.route('/trails/<int:id>', methods=['PUT'])
 @swag_from({
