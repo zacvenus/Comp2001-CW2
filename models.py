@@ -81,7 +81,6 @@ class TrailLog(db.Model):
     trail = db.relationship("Trail", back_populates="trail_logs", lazy=True)
     user = db.relationship("User", back_populates="trail_logs", lazy=True)
 
-# Schemas
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
