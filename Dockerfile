@@ -1,32 +1,21 @@
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PATH="/opt/venv/bin:$PATH"
-ENV DATABASE_SERVER="dist-6-505.uopnet.plymouth.ac.uk"
+ENV ACCEPT_EULA=Y
 
-RUN apt-get update && apt-get install -y \
-    curl \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    libpq-dev \
-    unixodbc \
-    unixodbc-dev \
-    && curl https://sh.rustup.rs -sSf | bash -s -- -y \
-    && export PATH="$HOME/.cargo/bin:$PATH" \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    curl gcc g++ gnupg unixodbc-dev \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends --allow-unauthenticated msodbcsql18 mssql-tools \
+    && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile \
+    && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc \
+    && apt-get clean
 
-RUN python -m venv /opt/venv
-RUN python -m pip install --no-cache-dir --upgrade pip setuptools
+COPY . .
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-WORKDIR /app
-COPY . /app
-
-RUN adduser --disabled-password --gecos "" --uid 5678 appuser && chown -R appuser /app
-USER appuser
-
+EXPOSE 8000
 CMD ["python", "app.py"]
