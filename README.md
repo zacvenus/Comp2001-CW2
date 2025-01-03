@@ -32,7 +32,40 @@ Steps:
     the url you are accessing the API with, Select the appropriate action you wish to perform, Providing data in format if needed 
     and Authorised credentials in the headers of your request.
     ![Alt text](postman.png)
+    ![Alt text](Postman2.png)
 9) You can now access the azure data base to check if your changes have been applied correctly under the COMP2001_ZVENUS database.
+
+Here is the example json in text form:
+
+{
+    "trail_name": "example",
+    "difficulty": "easy",
+    "distance": 3.5,
+    "elevation": 100.0,
+    "hours": 2,
+    "minutes": 15,
+    "description": "example",
+    "location_id": 1,
+    "type_id": 1,
+    "trail_points": [
+        {
+            "sequence_order": 1,
+            "latitude": 51.1234,
+            "longitude": -1.1234
+        },
+        {
+            "sequence_order": 2,
+            "latitude": 51.1240,
+            "longitude": -1.1240
+        },
+        {
+            "sequence_order": 3,
+            "latitude": 51.1250,
+            "longitude": -1.1250
+        }
+    ]
+}
+
 
 ## issues
 There is only one known issue that due to use of openapi3.0 and flask when a menu is opened on the swagger ui it prompts an error message due to legacy definitions in the swagger code itself, this does not effect the use of the code however i could not find how to remove the error itself.
